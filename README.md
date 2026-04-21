@@ -22,7 +22,9 @@ This project pairs an RFID reader with a **Time-of-Flight distance sensor** to c
 
 ## Data
 
-Two datasets were collected:
+<img src="docs/images/tap_distribution.png" width="740"/>
+
+The owner taps consistently around **08:00** and **18:00** — a clear daily rhythm the models can learn. Two datasets were collected:
 
 **Phase 1 — Synthetic** — generated from real dormitory access statistics to validate the approach before hardware measurements were available.
 
@@ -43,15 +45,21 @@ Each tap produces:
 | `rfid_hold_duration_ms` | How long the card was held against the reader |
 | `tof_*` | Approach speed, min/max/mean/std distance, approach distance |
 
-<img src="docs/images/tap_distribution.png" width="740"/>
+---
 
-The owner taps consistently around **08:00** and **18:00** — a clear daily rhythm the models can learn.
+## Baseline — threshold detection
+
+Before any ML, a simple rule: flag any tap outside a ±1 hour window around the owner's median tap time. The window is computed separately for each part of day (morning / evening).
+
+<img src="docs/images/threshold_detection.png" width="740"/>
+
+The shaded bands show the allowed windows. Anything outside is rejected. This gives a **FRR of 28.95 %** and **FAR of 26.67 %** — decent for one line of logic, but too many false alarms.
 
 ---
 
-## Models
+## ML models
 
-All models train exclusively on legitimate owner data.
+All models train exclusively on legitimate owner data — no attacker samples seen during training.
 
 <img src="docs/images/isolation_forest_owner.png" width="740"/>
 
