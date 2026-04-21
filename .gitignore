@@ -1,4 +1,21 @@
-.venv/
-__pycache__/
-*.pyc
-.ipynb_checkpoints/
+# Track only what belongs in the repo — ignore everything else
+
+*
+**/
+
+!.gitignore
+!README.md
+!pc_HANDLER.py
+# notebooks
+!01_synthetic_data.ipynb
+!01_synthetic_data_en.ipynb
+!02_real_data.ipynb
+!02_real_data_en.ipynb
+
+# folders
+!data/
+!data/**
+!captures/
+!captures/**
+!docs/
+!docs/**
