@@ -4,42 +4,66 @@
 
 # Access Control System — RFID Anomaly Detection
 
-Machine learning PoC that profiles a legitimate cardholder's entry behaviour from **RFID + Time-of-Flight sensor data** and flags deviations as potential unauthorized access. Built as a school research project (ŠkV — Školská vedecká činnosť).
+---
+
+## The problem
+
+Standard RFID access control grants entry to anyone who holds the correct card — a stolen or cloned card is indistinguishable from the legitimate owner. Physical security systems need a second layer that doesn't require a PIN or biometric scanner.
 
 ---
 
-## The idea
+## The approach
 
-An RFID reader and a ToF distance sensor record every card tap. The system learns what a normal entry looks like — time of day, approach speed, card hold duration — and uses anomaly detection to flag anyone who doesn't match that profile, without needing any labelled attacker data.
+Every legitimate cardholder has a unique behavioural pattern: they tap at roughly the same times of day, hold the card the same way, and approach the reader at a characteristic speed. A system that has learned this pattern can flag entries that look out of place — without ever needing labelled attacker data.
+
+This project pairs an RFID reader with a **Time-of-Flight distance sensor** to capture the full approach profile of each tap, then trains unsupervised anomaly detection models on the owner's data alone.
 
 ---
 
-## Features used per tap
+## Data
+
+Two datasets were collected:
+
+**Phase 1 — Synthetic** — generated from real dormitory access statistics to validate the approach before hardware measurements were available.
+
+**Phase 2 — Real captures** — 20 taps each from two real individuals. Training uses one person's taps; the other person's taps act as the attack set.
+
+Each dataset is split 70 / 30 into training (owner only) and test sets.
+
+---
+
+## Features
+
+Each tap produces:
 
 | Feature | What it captures |
 |---|---|
-| `time_of_day_seconds` | Time of tap, encoded cyclically (so 23:59 → 00:00 is continuous) |
-| `day_of_week` | Day of week, encoded cyclically |
+| `time_of_day` | Time encoded cyclically (23:59 → 00:00 is continuous) |
+| `day_of_week` | Day encoded cyclically |
 | `rfid_hold_duration_ms` | How long the card was held against the reader |
-| `tof_distance_mm_array` | Full distance profile of the hand/card approach |
+| `tof_*` | Approach speed, min/max/mean/std distance, approach distance |
 
-The ToF array is reduced to derived features: approach speed, min/max/mean/std distance, approach distance.
+<img src="docs/images/tap_distribution.png" width="740"/>
+
+The owner taps consistently around **08:00** and **18:00** — a clear daily rhythm the models can learn.
 
 ---
 
-## Two-phase study
+## Models
 
-**Phase 1 — Synthetic dataset** — generated from real dormitory access statistics to validate the approach before measurements were available.
+All models train exclusively on legitimate owner data.
 
-**Phase 2 — Real captures** — 20 taps each from two real individuals, used to test generalization to genuine behavioural biometrics.
+<img src="docs/images/isolation_forest_owner.png" width="740"/>
 
-Each dataset is split 70 / 30 into training (owner only) and test sets. A separate attack dataset is used for FAR evaluation.
+The red-shaded region is learned as anomalous — entries outside the owner's normal time windows are flagged regardless of day.
+
+<img src="docs/images/isolation_forest_attack.png" width="740"/>
+
+On the attack dataset the same boundary catches the majority of intruder taps.
 
 ---
 
 ## Results
-
-<img src="docs/images/elliptic_envelope.png" width="740"/>
 
 | Method | FRR | FAR | Notes |
 |---|---|---|---|
@@ -47,26 +71,9 @@ Each dataset is split 70 / 30 into training (owner only) and test sets. A separa
 | Isolation Forest | 13.16 % | 26.67 % | Time features only |
 | One-Class SVM | 23.68 % | 2.22 % | |
 | Local Outlier Factor | 10.53 % | 13.33 % | |
-| Elliptic Envelope | 7.89 % | 0.00 % | |
 | **Neural Network (autoencoder)** | **2.63 %** | **4.44 %** | Time + ToF features, fused branches |
 
-The autoencoder was trained to reconstruct normal entry sequences. Inputs with reconstruction error above the 95th-percentile training threshold are flagged as anomalies.
-
----
-
-## How the model learns
-
-<img src="docs/images/isolation_forest_owner.png" width="740"/>
-
-All models train exclusively on legitimate owner data. The red-shaded region is learned as anomalous; points outside the owner's normal time windows are flagged regardless of day.
-
-<img src="docs/images/isolation_forest_attack.png" width="740"/>
-
-On the attack dataset the same boundary catches a large fraction of intruder taps as anomalies.
-
-<img src="docs/images/tap_distribution.png" width="740"/>
-
-The owner taps consistently around **08:00** and **18:00** each day — a clear behavioural pattern the models can exploit.
+The autoencoder reconstructs normal entry sequences; inputs with reconstruction error above the 95th-percentile training threshold are flagged as anomalies.
 
 ---
 
