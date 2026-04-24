@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/images/cover.png" width="740"/>
+  <img src="docs/images/cover.png" width="592"/>
 </p>
 
 # Access Control System — RFID Anomaly Detection
@@ -101,3 +101,7 @@ Full written report: [`docs/`](docs/)
 ## Stack
 
 Python · scikit-learn · pandas · NumPy · Matplotlib · Jupyter
+
+---
+
+9505 · 9519
