@@ -1,8 +1,0 @@
-Synthetic testing dataset generated from the uploaded training CSV.
-Seed: 42
-Rows: 45
-Columns kept identical to training file.
-Train length mean: 34.37 | Test length mean: 34.42
-Train duration mean: 1987.46 | Test duration mean: 1976.56
-Train time mean: 49928.42 | Test time mean: 56116.91
-Arrays were created by resampling + mutating real patterns, so they stay similar but are not copies.

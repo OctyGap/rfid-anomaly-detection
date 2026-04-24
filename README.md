@@ -104,4 +104,4 @@ Python · scikit-learn · pandas · NumPy · Matplotlib · Jupyter
 
 ---
 
-9505 · 9519
+<img src="docs/images/9505.jpg" width="370"/> <img src="docs/images/9519.jpg" width="370"/>
